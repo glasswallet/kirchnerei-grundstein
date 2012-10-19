@@ -27,7 +27,7 @@
 
 	<artifactId>kirchnerei-grundstein-persistence</artifactId>
 
-	<packaging>java</packaging>
+	<packaging>jar</packaging>
 
 	<properties>
 		<eclipselink.version>2.4.0</eclipselink.version>
@@ -37,12 +37,12 @@
 		<dependency>
 			<groupId>kirchnerei-grundstein</groupId>
 			<artifactId>kirchnerei-grundstein-utils</artifactId>
-			<version>${grundstein.version}</version>
+			<version>0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>kirchnerei-grundstein</groupId>
 			<artifactId>kirchnerei-grundstein-composite</artifactId>
-			<version>${grundstein.version}</version>
+			<version>0.1</version>
 		</dependency>
 
 		<!-- Scope Test -->

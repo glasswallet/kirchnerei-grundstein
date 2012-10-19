@@ -6,18 +6,18 @@
 
     <groupId>kirchnerei-grundstein</groupId>
     <artifactId>kirchnerei-grundstein</artifactId>
-    <version>${grundstein.version}</version>
+    <version>0.1</version>
 	<modules>
 		<module>utils</module>
 		<module>composite</module>
 		<module>persistence</module>
+		<module>webapp</module>
 	</modules>
 	<packaging>pom</packaging>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<grundstein.version>0.1</grundstein.version>
 	</properties>
 
 	<dependencies>

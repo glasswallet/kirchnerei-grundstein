@@ -33,7 +33,7 @@
 		<dependency>
 			<groupId>kirchnerei-grundstein</groupId>
 			<artifactId>kirchnerei-grundstein-utils</artifactId>
-			<version>${grundstein.version}</version>
+			<version>0.1</version>
 		</dependency>
 	</dependencies>
 
