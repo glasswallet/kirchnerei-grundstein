@@ -15,11 +15,14 @@
  */
 package kirchnerei.grundstein.persistence;
 
+import kirchnerei.grundstein.LogUtils;
 import kirchnerei.grundstein.composite.CompositeBuilder;
 import kirchnerei.grundstein.composite.CompositeException;
 import kirchnerei.grundstein.composite.CompositeFree;
 import kirchnerei.grundstein.composite.CompositeInit;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -46,6 +49,8 @@ import javax.persistence.Persistence;
  */
 public class EntityService implements CompositeInit, CompositeFree {
 
+	private static final Log log = LogFactory.getLog(EntityService.class);
+
 	private EntityManagerFactory factory = null;
 
 	private String name;
@@ -69,8 +74,12 @@ public class EntityService implements CompositeInit, CompositeFree {
 	}
 
 	public static void rollback(EntityTransaction tx) {
-		if (tx != null) {
-			tx.rollback();
+		try {
+			if (tx != null) {
+				tx.rollback();
+			}
+		} catch (Exception e) {
+			LogUtils.warn(log, "entity rollback is failed (message: %s)", e.getMessage());
 		}
 	}
 
