@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package kirchnerei.grundstein.proxy;
 
 import org.apache.commons.lang.StringUtils;
@@ -35,30 +34,35 @@ public class ProxyBase implements InvocationHandler {
 		this.prop2Filter = (prop2Filter != null) ? prop2Filter : new HashMap<String, ProxyFilter>();
 	}
 
-	protected Object getValue() {
+	@Override
+	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		return invokeSource(getValue(), proxy, method, args);
+	}
+
+	Object getValue() {
 		return value;
 	}
 
-	protected void setValue(Object value) {
+	void setValue(Object value) {
 		this.value = value;
 	}
 
-
-	@Override
-	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+	protected final Object invokeSource(Object source, Object proxy, Method method, Object[] args)
+		throws Throwable
+	{
 		String methodName = method.getName();
 		if (StringUtils.isEmpty(methodName)) {
 			// strange thing (method without name??)
-			return method.invoke(value, args);
+			return method.invoke(source, args);
 		}
 		InvokeDirection dir = calculateInvokeDirection(methodName);
 		if (dir == null) {
 			// not getter or setter method
-			return method.invoke(value, args);
+			return method.invoke(source, args);
 		}
 		String property = calculatePropertyName(methodName);
 		if (dir == InvokeDirection.READ) {
-			Object result = method.invoke(value, args);
+			Object result = method.invoke(source, args);
 			Class<?> type = method.getReturnType();
 			return invokeRead(type, property, result);
 		}
@@ -67,9 +71,10 @@ public class ProxyBase implements InvocationHandler {
 		{
 			Class<?> type = method.getParameterTypes()[0];
 			args[0] = invokeWrite(type, property, args[0]);
-			return method.invoke(value, args);
+			return method.invoke(source, args);
 		}
-		return method.invoke(value, args);
+		return method.invoke(source, args);
+
 	}
 
 	protected Object invokeRead(Class<?> type, String property, Object value) {

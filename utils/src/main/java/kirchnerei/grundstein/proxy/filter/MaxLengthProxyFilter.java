@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package kirchnerei.grundstein.proxy;
+package kirchnerei.grundstein.proxy.filter;
+
+import kirchnerei.grundstein.proxy.InvokeDirection;
+import kirchnerei.grundstein.proxy.ProxyFilter;
 
 public class MaxLengthProxyFilter extends ProxyFilter {
 	private final int maxLength;
