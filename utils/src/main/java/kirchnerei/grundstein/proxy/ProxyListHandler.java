@@ -31,15 +31,14 @@ public class ProxyListHandler<T> extends ProxyBase implements Iterable<T>, List<
 		if (!type.isInterface()) {
 			throw new IllegalArgumentException("proxy type is not a interface");
 		}
-		ClassLoader cl = type.getClassLoader();
 		return new ProxyListHandler<T>(items, type, prop2Filter);
 	}
 
 	private final List<T> items;
 
-	private Object proxy;
+	private final Object proxy;
 
-	private Class<T> type;
+	private final Class<T> type;
 
 	protected ProxyListHandler(List<T> items, Class<T> type, Map<String, ProxyFilter> prop2Filter) {
 		super(null, prop2Filter);
