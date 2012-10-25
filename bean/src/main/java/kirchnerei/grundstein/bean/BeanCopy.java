@@ -68,6 +68,24 @@ public class BeanCopy {
 		}
 	}
 
+	public Class<?> getWritePropertyClass(Object bean, String name) {
+		try {
+			PropertyDescriptor pd = pub.getPropertyDescriptor(bean, name);
+			return pd.getWriteMethod().getParameterTypes()[0];
+		} catch (Exception e) {
+			throw new BeanCopyException(e, "write property class from '%s' is failed", name);
+		}
+	}
+
+	public Class<?> getReadPropertyClass(Object bean, String name) {
+		try {
+			PropertyDescriptor pd = pub.getPropertyDescriptor(bean, name);
+			return pd.getReadMethod().getReturnType();
+		} catch (Exception e) {
+			throw new BeanCopyException(e, "read property class from '%s' is failed", name);
+		}
+	}
+
 	private Object convert(Class<?> type, Object value) {
 		// TODO
 		return value;
