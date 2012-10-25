@@ -15,12 +15,7 @@
  */
 package kirchnerei.grundstein.proxy;
 
-public abstract class ProxyFilter {
+public interface ProxyFilter {
 
-
-	public final Object invoke(InvokeDirection dir, Class<?> type, Object value) {
-		return convert(dir, type, value);
-	}
-
-	protected abstract Object convert(InvokeDirection dir, Class<?> type, Object value);
+	abstract Object invoke(InvokeDirection dir, Class<?> type, Object value);
 }

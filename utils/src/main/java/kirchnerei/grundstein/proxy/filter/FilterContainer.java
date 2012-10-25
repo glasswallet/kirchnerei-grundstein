@@ -18,24 +18,29 @@ package kirchnerei.grundstein.proxy.filter;
 import kirchnerei.grundstein.proxy.InvokeDirection;
 import kirchnerei.grundstein.proxy.ProxyFilter;
 
-public class StringNotEmptyProxyFilter implements ProxyFilter {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
-	private final String defaultText;
+public class FilterContainer implements ProxyFilter {
 
-	public StringNotEmptyProxyFilter(String defaultText) {
-		this.defaultText = defaultText;
+	private final List<ProxyFilter> filters = new ArrayList<ProxyFilter>();
+
+	public FilterContainer(Collection<ProxyFilter> filters) {
+		this.filters.addAll(filters);
 	}
 
-	public StringNotEmptyProxyFilter() {
-		this("");
+	public FilterContainer(ProxyFilter... filters) {
+		this(Arrays.asList(filters));
 	}
 
 	@Override
-	public  Object invoke(InvokeDirection dir, Class<?> type, Object value) {
-		if (type == String.class) {
-			String text = (String) value;
-			return value == null ? defaultText : text;
+	public Object invoke(InvokeDirection dir, Class<?> type, Object value) {
+		Object temp = value;
+		for (ProxyFilter f : filters) {
+			temp = f.invoke(dir, type, temp);
 		}
-		return value;
+		return temp;
 	}
 }

@@ -18,7 +18,7 @@ package kirchnerei.grundstein.proxy.filter;
 import kirchnerei.grundstein.proxy.InvokeDirection;
 import kirchnerei.grundstein.proxy.ProxyFilter;
 
-public class MaxLengthProxyFilter extends ProxyFilter {
+public class MaxLengthProxyFilter implements ProxyFilter {
 	private final int maxLength;
 
 	public MaxLengthProxyFilter(int maxLength) {
@@ -35,7 +35,7 @@ public class MaxLengthProxyFilter extends ProxyFilter {
 	}
 
 	@Override
-	protected Object convert(InvokeDirection dir, Class<?> type, Object value) {
+	public Object invoke(InvokeDirection dir, Class<?> type, Object value) {
 		if (dir == InvokeDirection.READ) {
 			return value;
 		}
