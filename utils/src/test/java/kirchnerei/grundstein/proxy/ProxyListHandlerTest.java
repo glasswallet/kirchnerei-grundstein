@@ -75,10 +75,10 @@ public class ProxyListHandlerTest {
 		assertNull(list.get(1).getText());
 	}
 
-	public static class IdMultiplicationProxyFilter extends ProxyFilter {
+	public static class IdMultiplicationProxyFilter implements ProxyFilter {
 
 		@Override
-		protected Object convert(InvokeDirection dir, Class<?> type, Object value) {
+		public Object invoke(InvokeDirection dir, Class<?> type, Object value) {
 			if (type == long.class || type == Long.class) {
 				long id = Long.valueOf((Long) value);
 				return (Long) id + 1000l;
