@@ -12,6 +12,7 @@
 		<module>composite</module>
 		<module>persistence</module>
 		<module>webapp</module>
+		<module>bean</module>
 	</modules>
 	<packaging>pom</packaging>
 
