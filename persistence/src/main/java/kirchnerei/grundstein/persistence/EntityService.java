@@ -60,7 +60,14 @@ public class EntityService implements CompositeInit, CompositeFree {
 		if (StringUtils.isEmpty(getName())) {
 			throw new CompositeException("persistence unit is empty");
 		}
-		factory = Persistence.createEntityManagerFactory(getName());
+		try {
+			factory = Persistence.createEntityManagerFactory(getName());
+			LogUtils.debug(log, "create entity manager '%s' with %s",
+				getName(), factory == null ? "null" : "success");
+		} catch (Exception e) {
+			LogUtils.warn(log, e, "persistent unit '%s' is failed'", getName());
+			throw new CompositeException(e, "persistent unit '%s' is failed", getName());
+		}
 	}
 
 	public EntityManager get() {
@@ -92,6 +99,7 @@ public class EntityService implements CompositeInit, CompositeFree {
 	@Override
 	public void free(CompositeBuilder builder) {
 		factory.close();
+		LogUtils.debug(log, "entity manager factory is closed");
 	}
 
 	public String getName() {
