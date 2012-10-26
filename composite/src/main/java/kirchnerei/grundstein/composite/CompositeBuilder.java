@@ -16,6 +16,9 @@
 package kirchnerei.grundstein.composite;
 
 import kirchnerei.grundstein.ClassUtils;
+import kirchnerei.grundstein.LogUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +39,10 @@ import java.util.Set;
  * @author Kirchnerei
  */
 public class CompositeBuilder {
+
+	private static final Log log = LogFactory.getLog(CompositeBuilder.class);
+
+	private static final Object locking = new Object();
 	
 	private final Map<Class<?>, Object> class2object;
 	private final Set<Class<?>> setupClasses;
@@ -83,6 +90,7 @@ public class CompositeBuilder {
 					continue;
 				}
 				setupClasses.add(clazz);
+				LogUtils.debug(log, "add setup type '%s'", clazz.getSimpleName());
 			}
 			tempClazz = tempClazz.getSuperclass();
 		}
@@ -182,10 +190,12 @@ public class CompositeBuilder {
 
 	private <T> T getInternalSingleton(Class<T> clazz) {
 		if (!class2object.containsKey(clazz)) {
-			synchronized (getClass()) {
+			synchronized (locking) {
 				if (!class2object.containsKey(clazz)) {
 					Class<?> tempClazz = prepareClassInfo(clazz);
 					Object o = ClassUtils.createInstance(tempClazz);
+					LogUtils.debug(log, "create singleton instance from '%s' (%s)",
+						clazz.getSimpleName(), tempClazz.getSimpleName());
 					class2object.put(clazz, o);
 					return callInitialize(ClassUtils.cast(o, clazz));
 				}
@@ -196,7 +206,7 @@ public class CompositeBuilder {
 	}
 
 	private <T> T newInternalInstance(Class<T> clazz) {
-		synchronized (getClass()) {
+		synchronized (locking) {
 			Class<?> tempClazz = prepareClassInfo(clazz);
 			Object o = ClassUtils.createInstance(tempClazz);
 			return callInitialize(ClassUtils.cast(o, clazz));
@@ -206,6 +216,7 @@ public class CompositeBuilder {
 	private <T> T callInitialize(T value) {
 		if (value instanceof CompositeInit) {
 			((CompositeInit) value).init(this);
+			LogUtils.debug(log, "%s: call initialize", value.getClass().getSimpleName());
 		}
 		return value;
 	}
@@ -213,9 +224,12 @@ public class CompositeBuilder {
 	private Class<?> prepareClassInfo(Class<?> superClazz) {
 		for (Class<?> clazz : setupClasses) {
 			if (superClazz.isAssignableFrom(clazz)) {
+				LogUtils.debug(log, "prepare info: find extends type from '%s' => '%s'",
+					superClazz.getSimpleName(), clazz.getSimpleName());
 				return clazz;
 			}
 		}
+		LogUtils.debug(log, "prepare info: use the type '%s'", superClazz.getSimpleName());
 		return superClazz;
 	}
 
