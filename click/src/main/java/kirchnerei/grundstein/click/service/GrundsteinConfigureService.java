@@ -24,9 +24,9 @@ import javax.servlet.ServletContext;
  *
  * <pre><code>
  *     &lt;context-param&gt;
- *         &lt;param-name&gtconfig-service-class&lt;/param-name&gt
- *         &lt;param-value&gtkirchnerei.grundstein.click.GrundsteinConfigureService&lt;/param-value&gt
- *     &lt;/context-param&gt
+ *         &lt;param-name&gt;config-service-class&lt;/param-name&gt;
+ *         &lt;param-value&gt;kirchnerei.grundstein.click.GrundsteinConfigureService&lt;/param-value&gt;
+ *     &lt;/context-param&gt;
  * </code></pre>
  */
 public class GrundsteinConfigureService extends XmlConfigService {

@@ -13,33 +13,37 @@
 
 	<packaging>jar</packaging>
 
+	<properties>
+		<grundstein.version>0.1</grundstein.version>
+	</properties>
+
 	<dependencies>
 		<!-- Internal Dependencies -->
 		<dependency>
 			<groupId>kirchnerei-grundstein</groupId>
 			<artifactId>kirchnerei-grundstein-utils</artifactId>
-			<version>0.1</version>
+			<version>${grundstein.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>kirchnerei-grundstein</groupId>
 			<artifactId>kirchnerei-grundstein-composite</artifactId>
-			<version>0.1</version>
+			<version>${grundstein.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>kirchnerei-grundstein</groupId>
 			<artifactId>kirchnerei-grundstein-webapp</artifactId>
-			<version>0.1</version>
+			<version>${grundstein.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>kirchnerei-grundstein</groupId>
+			<artifactId>kirchnerei-grundstein-bean</artifactId>
+			<version>${grundstein.version}</version>
 		</dependency>
 
 		<!-- Scope Compile -->
 		<dependency>
 			<groupId>org.apache.click</groupId>
 			<artifactId>click</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.click</groupId>
-			<artifactId>click-extra</artifactId>
 			<version>2.3.0</version>
 		</dependency>
 		<dependency>

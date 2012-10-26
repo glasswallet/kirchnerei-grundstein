@@ -45,13 +45,19 @@ public class GrundsteinClickServlet extends ClickServlet {
 		super.init();
 
 		builder = HttpBuilder.getCompositeBuilder(getServletContext());
-		LogUtils.trace(log, "initialize the click servlet and load the composite builder");
+		LogUtils.debug(log, "initialize the click servlet and load the composite builder: %s",
+			builder == null ? "failed" : "okay");
 	}
 
 	@Override
 	protected void activatePageInstance(Page page) {
-		builder.init(page);
-		LogUtils.trace(log, "connect the page '%s' with the composite builder",
-			page.getClass().getSimpleName());
+		try {
+			builder.init(page);
+		} catch (Exception e) {
+			LogUtils.warn(log, e, "");
+		} finally {
+			LogUtils.debug(log, "connect the page '%s' with the composite builder",
+				page != null ? page.getClass().getSimpleName() : "null");
+		}
 	}
 }
