@@ -17,9 +17,13 @@ package kirchnerei.grundstein.persistence;
 
 public class EntityServiceSetup {
 
+	public static final String DRIVER = "org.hsqldb.jdbcDriver";
+	public static final String URL = "jdbc:hsqldb:mem:test";
+
 	public static class entityService extends EntityService {
 		{
 			setName("test-unit");
+			setUpPersistence(DRIVER, URL, "sa", "");
 		}
 	}
 }

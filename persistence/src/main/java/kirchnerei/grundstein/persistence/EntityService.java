@@ -28,6 +28,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The class <code>EntityService</code>
@@ -55,13 +57,30 @@ public class EntityService implements CompositeInit, CompositeFree {
 
 	private String name;
 
+	private String persistenceDriver = null;
+
+	private String persistenceUrl = null;
+
+	private String persistenceUser = null;
+
+	private String persistencePassword = null;
+
 	@Override
 	public void init(CompositeBuilder builder) {
 		if (StringUtils.isEmpty(getName())) {
 			throw new CompositeException("persistence unit is empty");
 		}
 		try {
-			factory = Persistence.createEntityManagerFactory(getName());
+			if (isPersistenceSetting()) {
+				Map<String, String> props = new HashMap<>();
+				props.put("javax.persistence.jdbc.driver", persistenceDriver);
+				props.put("javax.persistence.jdbc.url", persistenceUrl);
+				props.put("javax.persistence.jdbc.user", persistenceUser);
+				props.put("javax.persistence.jdbc.password", persistencePassword);
+				factory = Persistence.createEntityManagerFactory(getName(), props);
+			} else {
+				factory = Persistence.createEntityManagerFactory(getName());
+			}
 			LogUtils.debug(log, "create entity manager '%s' with %s",
 				getName(), factory == null ? "null" : "success");
 		} catch (Exception e) {
@@ -100,6 +119,32 @@ public class EntityService implements CompositeInit, CompositeFree {
 	public void free(CompositeBuilder builder) {
 		factory.close();
 		LogUtils.debug(log, "entity manager factory is closed");
+	}
+
+	protected void setUpPersistence(String driver, String url, String user, String password) {
+		if (StringUtils.isEmpty(driver)) {
+			throw new CompositeException("parameter <driver> is null or empty");
+		}
+		if (StringUtils.isEmpty(url)) {
+			throw new CompositeException("parameter <url> is null or empty");
+		}
+		if (StringUtils.isEmpty(user)) {
+			throw new CompositeException("parameter <user> is null or empty");
+		}
+		if (password == null) {
+			throw new CompositeException("parameter <url> is null");
+		}
+		this.persistenceDriver = driver;
+		this.persistenceUrl = url;
+		this.persistenceUser = user;
+		this.persistencePassword = password;
+	}
+
+	public boolean isPersistenceSetting() {
+		return StringUtils.isNotEmpty(persistenceDriver) &&
+			StringUtils.isNotEmpty(persistenceUrl) &&
+			StringUtils.isNotEmpty(persistenceUser) &&
+			persistencePassword != null;
 	}
 
 	public String getName() {
