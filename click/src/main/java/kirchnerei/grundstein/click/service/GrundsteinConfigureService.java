@@ -18,8 +18,6 @@ package kirchnerei.grundstein.click.service;
 
 import org.apache.click.service.XmlConfigService;
 
-import javax.servlet.ServletContext;
-
 /**
  *
  * <pre><code>
@@ -38,10 +36,5 @@ public class GrundsteinConfigureService extends XmlConfigService {
 			isTemplate = path.endsWith("html");
 		}
 		return isTemplate;
-	}
-
-	@Override
-	public void onInit(ServletContext servletContext) throws Exception {
-		super.onInit(servletContext);
 	}
 }
