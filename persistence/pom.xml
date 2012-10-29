@@ -55,12 +55,6 @@
 					<groupId>commonj.sdo</groupId>
 				</exclusion>
 			</exclusions>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.persistence</groupId>
-			<artifactId>javax.persistence</artifactId>
-			<version>2.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>hsqldb</groupId>
