@@ -19,6 +19,7 @@ package kirchnerei.grundstein.click;
 import kirchnerei.grundstein.LogUtils;
 import kirchnerei.grundstein.composite.CompositeBuilder;
 import kirchnerei.grundstein.webapp.HttpBuilder;
+import ognl.TypeConverter;
 import org.apache.click.ClickServlet;
 import org.apache.click.Page;
 import org.apache.commons.logging.Log;
@@ -59,5 +60,16 @@ public class GrundsteinClickServlet extends ClickServlet {
 			LogUtils.debug(log, "connect the page '%s' with the composite builder",
 				page != null ? page.getClass().getSimpleName() : "null");
 		}
+	}
+
+	@Override
+	protected TypeConverter getTypeConverter() throws RuntimeException {
+		if (typeConverter == null) {
+			LogUtils.debug(log,
+				"type converter will be created and composite builder is initialized it");
+			TypeConverter temp = super.getTypeConverter();
+			return builder.init(temp);
+		}
+		return super.getTypeConverter();
 	}
 }
