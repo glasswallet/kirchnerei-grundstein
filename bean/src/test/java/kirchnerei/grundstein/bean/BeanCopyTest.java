@@ -15,11 +15,13 @@
  */
 package kirchnerei.grundstein.bean;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 public class BeanCopyTest {
 
@@ -36,6 +38,67 @@ public class BeanCopyTest {
 		assertEquals(bean1.getTitle(), bean2.getTitle());
 		assertEquals(bean1.isActive(), bean2.isActive());
 		assertEquals(bean1.getAmount(), bean2.getAmount(), 0.01);
+	}
+
+	@Test
+	public void testReadType() {
+		Bean bean = new Bean(4712L, "Test ReadType", true, 2.45);
+		Class<?> type = beanCopy.getReadPropertyClass(bean, "amount");
+		assertEquals(double.class, type);
+	}
+
+	@Test(expected = BeanCopyException.class)
+	public void testReadTypeUnknownProperty() {
+		Bean bean = new Bean(4712L, "Test ReadType", true, 2.45);
+		beanCopy.getReadPropertyClass(bean, "text");
+	}
+
+	@Test
+	public void testWriteType() {
+		Bean bean = new Bean(4712L, "Test ReadType", true, 2.45);
+		Class<?> type = beanCopy.getWritePropertyClass(bean, "amount");
+		assertEquals(double.class, type);
+	}
+
+	@Test(expected = BeanCopyException.class)
+	public void testWriteTypeUnknownProperty() {
+		Bean bean = new Bean(4712L, "Test ReadType", true, 2.45);
+		beanCopy.getWritePropertyClass(bean, "text");
+	}
+
+	@Test(expected = BeanCopyException.class)
+	public void testReadUnknownProperty() {
+		Bean bean = new Bean(4712L, "Test ReadType", true, 2.45);
+		beanCopy.readProperty(bean, "text");
+	}
+
+	@Test(expected = BeanCopyException.class)
+	public void testWriteUnknownProperty() {
+		Bean bean = new Bean(4712L, "Test ReadType", true, 2.45);
+		beanCopy.copyProperty(bean, "text", "hallo");
+	}
+
+	@Test
+	public void testReadParameterDelivery() {
+		final Map<String, String> params = new HashMap<>();
+		params.put("id", "4711");
+		params.put("title", "Parameter Delivery");
+		params.put("active", "true");
+		params.put("amount", "13.99");
+
+		final ParameterDelivery pd = new ParameterDelivery() {
+			@Override
+			public String getParameter(String name) {
+				return params.get(name);
+			}
+		};
+
+		Bean bean = beanCopy.read(pd, Arrays.asList("id", "title", "active", "amount"), Bean.class);
+		assertNotNull(bean);
+		assertEquals(4711, bean.getId());
+		assertEquals("Parameter Delivery", bean.getTitle());
+		assertEquals(13.99, bean.getAmount(), 0.01);
+		assertTrue(bean.isActive());
 	}
 
 

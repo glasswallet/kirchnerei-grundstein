@@ -20,18 +20,39 @@ import kirchnerei.grundstein.ClassUtils;
 import kirchnerei.grundstein.LogUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.beans.PropertyDescriptor;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BeanCopy {
 
 	private static final Log log = LogFactory.getLog(BeanCopy.class);
 
+	private final Map<Class<?>, StringConverter> class2Converter = new HashMap<>();
+
 	private final BeanUtilsBean bub = new BeanUtilsBean();
 	private final PropertyUtilsBean pub = bub.getPropertyUtils();
+
+	public BeanCopy() {
+		LongStringConverter lsc = new LongStringConverter();
+		IntegerStringConverter isc = new IntegerStringConverter();
+		DoubleStringConverter dsc = new DoubleStringConverter();
+		BooleanStringConverter bsc = new BooleanStringConverter();
+		addConverter(long.class, lsc);
+		addConverter(Long.class, lsc);
+		addConverter(int.class, isc);
+		addConverter(Integer.class, isc);
+		addConverter(double.class, dsc);
+		addConverter(Double.class, dsc);
+		addConverter(boolean.class, bsc);
+		addConverter(Boolean.class, bsc);
+	}
 
 	public <T> T copy(Object source, Class<T> type, List<String> properties) {
 		T target = ClassUtils.createInstance(type);
@@ -50,6 +71,19 @@ public class BeanCopy {
 	}
 
 
+	public <T> T read(ParameterDelivery delivery, List<String> properties, Class<T> type) {
+		T target = ClassUtils.createInstance(type);
+		return read(delivery, properties, target);
+	}
+
+	public <T> T read(ParameterDelivery delivery, List<String> properties, T target) {
+		for (String name : properties) {
+			String value = delivery.getParameter(name);
+			copyProperty(target, name, value);
+		}
+		return target;
+	}
+
 	public Object readProperty(Object bean, String name) {
 		try {
 			return pub.getProperty(bean, name);
@@ -59,10 +93,13 @@ public class BeanCopy {
 	}
 
 	public void copyProperty(Object bean, String name, Object value) {
+		Class<?> toType = getWritePropertyClass(bean, name);
+		copyProperty(bean, name, toType, value);
+	}
+
+	private void copyProperty(Object bean, String name, Class<?> toType, Object value) {
 		try {
-			PropertyDescriptor pd = pub.getPropertyDescriptor(bean, name);
-			Class<?> type = pd.getWriteMethod().getParameterTypes()[0];
-			bub.copyProperty(bean, name, convert(type, value));
+			bub.copyProperty(bean, name, convertValue(toType, value));
 		} catch (Exception e) {
 			throw new BeanCopyException(e, "copy property '%s' is failed", name);
 		}
@@ -86,8 +123,70 @@ public class BeanCopy {
 		}
 	}
 
-	private Object convert(Class<?> type, Object value) {
-		// TODO
+	public void addConverter(Class<?> toType, StringConverter converter) {
+		if (!class2Converter.containsKey(toType)) {
+			class2Converter.put(toType, converter);
+		}
+	}
+
+	public void addConverter(Class<?> toType, Class<? extends StringConverter> converterType) {
+		if (!class2Converter.containsKey(toType)) {
+			StringConverter converter = ClassUtils.createInstance(converterType);
+			class2Converter.put(toType, converter);
+		}
+	}
+
+	private Object convertValue(Class<?> toType, Object value) {
+		if (class2Converter.containsKey(toType) && value instanceof String) {
+			StringConverter converter = class2Converter.get(toType);
+			return converter.convert((String) value);
+		}
 		return value;
+	}
+
+
+	private static class LongStringConverter implements StringConverter {
+
+		@Override
+		public Object convert(String text) {
+			return NumberUtils.toLong(text);
+		}
+	}
+
+	private static class IntegerStringConverter implements StringConverter {
+
+		@Override
+		public Object convert(String text) {
+			return NumberUtils.toInt(text);
+		}
+	}
+
+	private static class DoubleStringConverter implements StringConverter {
+
+		@Override
+		public Object convert(String text) {
+			return NumberUtils.toDouble(text);
+		}
+	}
+
+	private static class BooleanStringConverter implements StringConverter {
+
+		@Override
+		public Object convert(String text) {
+			if (StringUtils.isEmpty(text)) {
+				return Boolean.FALSE;
+			}
+			switch (text.toLowerCase()) {
+				case "true":
+				case "t":
+					return Boolean.TRUE;
+				case "false":
+				case "f":
+				case "0":
+					return Boolean.FALSE;
+			}
+			int value = NumberUtils.toInt(text);
+			return (value > 0) ? Boolean.TRUE : Boolean.FALSE;
+		}
 	}
 }
