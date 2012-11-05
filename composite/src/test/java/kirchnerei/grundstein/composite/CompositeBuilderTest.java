@@ -124,11 +124,15 @@ public class CompositeBuilderTest {
 	 */
 	public static class Setup {
 
-		public static class Bean200 extends Bean {
+		public static class Bean200 extends Bean implements CompositeCreate {
 			public Bean200() {
 				super();
-				setName("Bean200");
 				setAmount(200);
+			}
+
+			@Override
+			public void create(CompositeBuilder builder) {
+				setName("Bean200");
 			}
 		}
 	}

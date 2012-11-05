@@ -152,8 +152,11 @@ public class CompositeBuilder {
 		}
 		class2object.put(type, callInitialize(value));
 	}
-	
+
 	public synchronized <T> T init(T value) {
+		if (value instanceof CompositeCreate) {
+			((CompositeCreate) value).create(this);
+		}
 		return callInitialize(value);
 	}
 
@@ -193,7 +196,7 @@ public class CompositeBuilder {
 			synchronized (locking) {
 				if (!class2object.containsKey(clazz)) {
 					Class<?> tempClazz = prepareClassInfo(clazz);
-					Object o = ClassUtils.createInstance(tempClazz);
+					Object o = callCreation(tempClazz);
 					LogUtils.debug(log, "create singleton instance from '%s' (%s)",
 						clazz.getSimpleName(), tempClazz.getSimpleName());
 					class2object.put(clazz, o);
@@ -208,9 +211,18 @@ public class CompositeBuilder {
 	private <T> T newInternalInstance(Class<T> clazz) {
 		synchronized (locking) {
 			Class<?> tempClazz = prepareClassInfo(clazz);
-			Object o = ClassUtils.createInstance(tempClazz);
+			Object o = callCreation(tempClazz);
 			return callInitialize(ClassUtils.cast(o, clazz));
 		}
+	}
+
+	private <T> T callCreation(Class<T> type) {
+		T value = ClassUtils.createInstance(type);
+		if (value instanceof CompositeCreate) {
+			((CompositeCreate) value).create(this);
+			LogUtils.debug(log, "%s: call creation", value.getClass().getSimpleName());
+		}
+		return value;
 	}
 
 	private <T> T callInitialize(T value) {
