@@ -1,6 +1,12 @@
 package kirchnerei.grundstein.webapp;
 
+import kirchnerei.grundstein.ClassUtilException;
+import kirchnerei.grundstein.ClassUtils;
+import kirchnerei.grundstein.LogUtils;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -8,11 +14,23 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  *
  */
-public abstract class HttpResourceServlet extends HttpServlet {
+public class HttpResourceServlet extends HttpServlet {
+
+	private static final long serialVersionUID = -5634908479411913228L;
+
+	public static final String INIT_PARAM_STRATEGY = "kirchnerei.grundstein.webapp.etagStrategy";
+
+	public static final String INIT_PARAM_RESOURCES =
+		"kirchnerei.grundstein.webapp.Resources";
+
+	public static final String INIT_PARAM_ENCODING = "kirchnerei.grundstein.webapp.encoding";
+
+	private static final Log log = LogFactory.getLog(HttpResourceServlet.class);
 
 	private static final String ETAG_SESSION_KEY =
 		HttpResourceServlet.class.getName() + ".ETagSession";
@@ -21,6 +39,10 @@ public abstract class HttpResourceServlet extends HttpServlet {
 	private static final String REQ_HEADER_ETAG = "ETag";
 
 	private ETagStrategy etagStrategy;
+
+	private TextResources resources;
+
+	private String encoding = "UTF-8";
 
 	public ETagStrategy getEtagStrategy() {
 		if (etagStrategy == null) {
@@ -33,6 +55,7 @@ public abstract class HttpResourceServlet extends HttpServlet {
 							return DigestUtils.sha256Hex(session.getId());
 						}
 					};
+					LogUtils.info(log, "etag strategy use the default implementation");
 				}
 			}
 		}
@@ -40,7 +63,38 @@ public abstract class HttpResourceServlet extends HttpServlet {
 	}
 
 	public void setEtagStrategy(ETagStrategy etagStrategy) {
-		this.etagStrategy = etagStrategy;
+		if (etagStrategy != null) {
+			this.etagStrategy = etagStrategy;
+			LogUtils.info(log, "etag strategy is implemented from '%s'",
+				etagStrategy.getClass().getSimpleName());
+		}
+	}
+
+	public TextResources getResources() {
+		return resources;
+	}
+
+	public void setResources(TextResources resources) {
+		if (resources == null) {
+			throw new RuntimeException("parameter <resources> must be not null");
+		}
+		this.resources = resources;
+	}
+
+	public String getEncoding() {
+		return encoding;
+	}
+
+	public void setEncoding(String encoding) {
+		this.encoding = encoding;
+	}
+
+	@Override
+	public void init() throws ServletException {
+		super.init();
+		loadETagStrategy();
+		loadTextResources();
+		loadEncoding();
 	}
 
 	@Override
@@ -75,9 +129,46 @@ public abstract class HttpResourceServlet extends HttpServlet {
 		return etag;
 	}
 
-	protected abstract void addContentType(HttpServletResponse response);
+	protected void addContentType(HttpServletResponse response) {
+		response.setContentType(resources.getContentType());
+	}
 
-	protected abstract void doProcess(HttpServletRequest request, HttpServletResponse response)
-		throws ServletException, IOException;
+	protected void doProcess(HttpServletRequest request, HttpServletResponse response)
+		throws ServletException, IOException
+	{
+		OutputStream output = response.getOutputStream();
+		getResources().writeTo(output, getEncoding());
+		output.flush();
+	}
 
+
+	private void loadETagStrategy() {
+		ETagStrategy strategy = null;
+		try {
+			String className = getInitParameter(INIT_PARAM_STRATEGY);
+			if (StringUtils.isEmpty(className)) {
+				return;
+			}
+			strategy = ClassUtils.createInstance(className, ETagStrategy.class);
+		} catch (ClassUtilException e) {
+			strategy = null;
+		}
+		setEtagStrategy(strategy);
+	}
+
+	private void loadTextResources() {
+		TextResources textResources = null;
+		String className = getInitParameter(INIT_PARAM_RESOURCES);
+		if (!StringUtils.isEmpty(className)) {
+			textResources = ClassUtils.createInstance(className, TextResources.class);
+		}
+		this.setResources(textResources);
+	}
+
+	private void loadEncoding() {
+		String temp = getInitParameter(INIT_PARAM_ENCODING);
+		if (!StringUtils.isEmpty(temp)) {
+			setEncoding(temp);
+		}
+	}
 }
