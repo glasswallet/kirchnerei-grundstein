@@ -14,7 +14,7 @@ import org.apache.click.util.RequestTypeConverter;
  * <pre><code>
  *     &lt;init-param&gt;
  *         &lt;param-name&gt;type-converter-class&lt;/param-name&gt;
- *         &lt;param-value&gt;com.mycorp.util.CustomTypeConverter&lt;/param-value&gt;
+ *         &lt;param-value&gt;kirchnerei.grundstein.click.util.GrundsteinTypeConverter&lt;/param-value&gt;
  *     &lt;/init-param&gt;
  * </code></pre>
  *

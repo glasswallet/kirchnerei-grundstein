@@ -17,6 +17,7 @@ package kirchnerei.grundstein.click.util;
 
 import kirchnerei.grundstein.ClassUtils;
 import kirchnerei.grundstein.composite.CompositeBuilder;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,6 +39,7 @@ public class RequestConverterFactoryTest {
 		factory = builder.getSingleton(RequestConverterFactory.class);
 	}
 
+	@After
 	public void tearDown() {
 		factory = null;
 		builder.destroy();
