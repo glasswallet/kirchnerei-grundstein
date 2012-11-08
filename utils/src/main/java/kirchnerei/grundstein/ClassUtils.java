@@ -89,6 +89,16 @@ public final class ClassUtils {
 					type.getSimpleName());
 		}
 	}
+
+	public static <T> T createInstance(String className, Class<T> type) {
+		Class<?> tempType = forName(className);
+		if (!type.isAssignableFrom(tempType)) {
+			throw new ClassUtilException("class <%s> is not casting into <%s>",
+				className, type.getSimpleName());
+		}
+		Object o = createInstance(tempType);
+		return cast(o, type);
+	}
 	
 	private ClassUtils() { }
 }

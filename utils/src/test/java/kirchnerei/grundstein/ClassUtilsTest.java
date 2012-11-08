@@ -84,6 +84,19 @@ public class ClassUtilsTest {
 	}
 
 	@Test
+	public void testCreateInstanceFromClassNameWithType() {
+		NameView bean = ClassUtils.createInstance("kirchnerei.grundstein.ClassUtilsTest$NameBean",
+			NameView.class);
+		assertNotNull(bean);
+	}
+
+	@Test(expected = ClassUtilException.class)
+	public void testCreateInstanceFromWrongClassName() {
+		ClassUtils.createInstance("kirchnerei.grundstein.ClassUtilsTest.NameBean",
+			StringBuffer.class);
+	}
+
+	@Test
 	public void testCast() {
 		Object value = new StringBuffer("test");
 		StringBuffer sb = ClassUtils.cast(value, StringBuffer.class);
@@ -98,6 +111,22 @@ public class ClassUtilsTest {
 
 	public static class BeanWithParameter {
 		public BeanWithParameter(int id){
+		}
+	}
+
+	public static interface NameView {
+		String getName();
+	}
+
+	public static class NameBean implements NameView {
+		private String name;
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
 		}
 	}
 }
