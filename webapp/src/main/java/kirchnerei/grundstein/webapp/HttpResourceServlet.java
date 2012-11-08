@@ -1,8 +1,25 @@
+/*
+ * Copyright 2012 Kirchnerei
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package kirchnerei.grundstein.webapp;
 
 import kirchnerei.grundstein.ClassUtilException;
 import kirchnerei.grundstein.ClassUtils;
 import kirchnerei.grundstein.LogUtils;
+import kirchnerei.grundstein.composite.CompositeBuilder;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -92,8 +109,9 @@ public class HttpResourceServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		super.init();
-		loadETagStrategy();
-		loadTextResources();
+		CompositeBuilder builder = HttpBuilder.getCompositeBuilder(getServletContext());
+		loadETagStrategy(builder);
+		loadTextResources(builder);
 		loadEncoding();
 	}
 
@@ -110,7 +128,7 @@ public class HttpResourceServlet extends HttpServlet {
 
 	private boolean checkEtagFromRequest(HttpServletRequest request, HttpServletResponse response) {
 		String etag = getETagFromSession(request);
-		if (!response.isCommitted() && REQ_HEADER_MATCH.equals(etag)) {
+		if (!response.isCommitted() && etag.equals(request.getHeader(REQ_HEADER_MATCH))) {
 			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 			return false;
 		}
@@ -142,7 +160,7 @@ public class HttpResourceServlet extends HttpServlet {
 	}
 
 
-	private void loadETagStrategy() {
+	private void loadETagStrategy(CompositeBuilder builder) {
 		ETagStrategy strategy = null;
 		try {
 			String className = getInitParameter(INIT_PARAM_STRATEGY);
@@ -150,17 +168,19 @@ public class HttpResourceServlet extends HttpServlet {
 				return;
 			}
 			strategy = ClassUtils.createInstance(className, ETagStrategy.class);
+			builder.init(strategy);
 		} catch (ClassUtilException e) {
 			strategy = null;
 		}
 		setEtagStrategy(strategy);
 	}
 
-	private void loadTextResources() {
+	private void loadTextResources(CompositeBuilder builder) {
 		TextResources textResources = null;
 		String className = getInitParameter(INIT_PARAM_RESOURCES);
 		if (!StringUtils.isEmpty(className)) {
 			textResources = ClassUtils.createInstance(className, TextResources.class);
+			builder.init(textResources);
 		}
 		this.setResources(textResources);
 	}
