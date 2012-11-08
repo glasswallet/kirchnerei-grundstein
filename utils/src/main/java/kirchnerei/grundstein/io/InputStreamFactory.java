@@ -1,5 +1,7 @@
 package kirchnerei.grundstein.io;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +27,9 @@ public class InputStreamFactory {
 	}
 
 	public final InputStream open(String resourceName) {
+		if (StringUtils.isEmpty(resourceName)) {
+			throw new NullPointerException("missing parameter 'resourceName'");
+		}
 		return new DelayedInputStream(resourceName, this);
 	}
 
