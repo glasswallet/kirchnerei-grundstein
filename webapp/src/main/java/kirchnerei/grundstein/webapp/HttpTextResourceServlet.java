@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package kirchnerei.grundstein.webapp;
 
 import kirchnerei.grundstein.ClassUtilException;
-import kirchnerei.grundstein.ClassUtils;
 import kirchnerei.grundstein.LogUtils;
 import kirchnerei.grundstein.composite.CompositeBuilder;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -35,17 +33,36 @@ import java.io.OutputStream;
 
 /**
  *
+ *
+ * <p>
+ *     Configuration in the web.xml
+ * </p>
+ *
+ * <servlet>
+ *     <servlet-name>ScriptResourceServlet</servlet-name>
+ *     <servlet-class>kirchnerei.grundstein.webapp.HttpTextResourceServlet</servlet-class>
+ *     <init-parameter>
+ *         <name>kirchnerei.grundstein.webapp.HttpETagStrategy</name>
+ *         <value>class implements the interface ETagStrategy</value>
+ *     </init-parameter>
+ *     <init-parameter>
+ *         <name>kirchnerei.grundstein.webapp.TextResources</name>
+ *         <value>class of TextResources</value>
+ *     </init-parameter>
+ *     <load-on-startup>1</load-on-startup>
+ * </servlet>
+ * <servlet-mapping>
+ *     <servlet-name>ScriptResourceServlet</servlet-name>
+ *     <url>/asserts/jquery.js</url>
+ * </servlet-mapping>
  */
 public class HttpTextResourceServlet extends HttpServlet {
 
 	private static final long serialVersionUID = -5634908479411913228L;
 
-	public static final String INIT_PARAM_STRATEGY = "kirchnerei.grundstein.webapp.ETagStrategy";
+	public static final String INIT_PARAM_STRATEGY = "kirchnerei.grundstein.webapp.HttpETagStrategy";
 
-	public static final String INIT_PARAM_RESOURCES =
-		"kirchnerei.grundstein.webapp.TextResources";
-
-	public static final String INIT_PARAM_ENCODING = "kirchnerei.grundstein.webapp.ContentType";
+	public static final String INIT_PARAM_RESOURCES = "kirchnerei.grundstein.webapp.TextResources";
 
 	private static final Log log = LogFactory.getLog(HttpTextResourceServlet.class);
 
@@ -55,17 +72,17 @@ public class HttpTextResourceServlet extends HttpServlet {
 	private static final String REQ_HEADER_MATCH = "If-None-Match";
 	private static final String REQ_HEADER_ETAG = "ETag";
 
-	private ETagStrategy etagStrategy;
+	private HttpETagStrategy etagStrategy;
 
 	private TextResources resources;
 
 	private String encoding = "UTF-8";
 
-	public ETagStrategy getEtagStrategy() {
+	public HttpETagStrategy getEtagStrategy() {
 		if (etagStrategy == null) {
 			synchronized (this) {
 				if (etagStrategy == null) {
-					etagStrategy = new ETagStrategy() {
+					etagStrategy = new HttpETagStrategy() {
 						@Override
 						public String build(HttpServletRequest request) {
 							HttpSession session = request.getSession(true);
@@ -79,7 +96,7 @@ public class HttpTextResourceServlet extends HttpServlet {
 		return etagStrategy;
 	}
 
-	public void setEtagStrategy(ETagStrategy etagStrategy) {
+	public void setEtagStrategy(HttpETagStrategy etagStrategy) {
 		if (etagStrategy != null) {
 			this.etagStrategy = etagStrategy;
 			LogUtils.info(log, "etag strategy is implemented from '%s'",
@@ -112,7 +129,6 @@ public class HttpTextResourceServlet extends HttpServlet {
 		CompositeBuilder builder = HttpCompositeBuilder.getCompositeBuilder(getServletContext());
 		loadETagStrategy(builder);
 		loadTextResources(builder);
-		loadEncoding();
 	}
 
 	@Override
@@ -155,21 +171,21 @@ public class HttpTextResourceServlet extends HttpServlet {
 		throws ServletException, IOException
 	{
 		OutputStream output = response.getOutputStream();
-		getResources().writeTo(output, getEncoding());
+		getResources().writeTo(output);
 		output.flush();
 	}
 
 
 	private void loadETagStrategy(CompositeBuilder builder) {
-		ETagStrategy strategy = null;
+		String className = getInitParameter(INIT_PARAM_STRATEGY);
+		if (StringUtils.isEmpty(className)) {
+			return;
+		}
+		HttpETagStrategy strategy = null;
 		try {
-			String className = getInitParameter(INIT_PARAM_STRATEGY);
-			if (StringUtils.isEmpty(className)) {
-				return;
-			}
-			strategy = ClassUtils.createInstance(className, ETagStrategy.class);
-			builder.init(strategy);
+			strategy = builder.getSingleton(className, HttpETagStrategy.class);
 		} catch (ClassUtilException e) {
+			LogUtils.warn(log, e, "load http etag strategy is failed '%s'", className);
 			strategy = null;
 		}
 		setEtagStrategy(strategy);
@@ -179,16 +195,8 @@ public class HttpTextResourceServlet extends HttpServlet {
 		TextResources textResources = null;
 		String className = getInitParameter(INIT_PARAM_RESOURCES);
 		if (!StringUtils.isEmpty(className)) {
-			textResources = ClassUtils.createInstance(className, TextResources.class);
-			builder.init(textResources);
+			textResources = builder.getSingleton(className, TextResources.class);
 		}
 		this.setResources(textResources);
-	}
-
-	private void loadEncoding() {
-		String temp = getInitParameter(INIT_PARAM_ENCODING);
-		if (!StringUtils.isEmpty(temp)) {
-			setEncoding(temp);
-		}
 	}
 }
