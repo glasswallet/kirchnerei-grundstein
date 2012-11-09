@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package kirchnerei.grundstein.click;
 
 import kirchnerei.grundstein.LogUtils;
@@ -37,6 +36,8 @@ import javax.servlet.ServletException;
  */
 public class GrundsteinClickServlet extends ClickServlet {
 
+	private static final long serialVersionUID = 8500998221645115830L;
+
 	private static final Log log = LogFactory.getLog(GrundsteinClickServlet.class);
 
 	private CompositeBuilder builder;
@@ -52,13 +53,18 @@ public class GrundsteinClickServlet extends ClickServlet {
 
 	@Override
 	protected void activatePageInstance(Page page) {
+		boolean hasError = false;
 		try {
 			builder.init(page);
 		} catch (Exception e) {
-			LogUtils.warn(log, e, "");
+			LogUtils.warn(log, e, "raising an exception by initializing the page '%s'",
+				page.getClass().getSimpleName());
+			hasError = true;
 		} finally {
-			LogUtils.debug(log, "connect the page '%s' with the composite builder",
-				page != null ? page.getClass().getSimpleName() : "null");
+			if (!hasError) {
+				LogUtils.debug(log, "connect the page '%s' with the composite builder",
+					page.getClass().getSimpleName());
+			}
 		}
 	}
 
