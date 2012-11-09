@@ -36,21 +36,21 @@ import java.io.OutputStream;
 /**
  *
  */
-public class HttpResourceServlet extends HttpServlet {
+public class HttpTextResourceServlet extends HttpServlet {
 
 	private static final long serialVersionUID = -5634908479411913228L;
 
-	public static final String INIT_PARAM_STRATEGY = "kirchnerei.grundstein.webapp.etagStrategy";
+	public static final String INIT_PARAM_STRATEGY = "kirchnerei.grundstein.webapp.ETagStrategy";
 
 	public static final String INIT_PARAM_RESOURCES =
-		"kirchnerei.grundstein.webapp.Resources";
+		"kirchnerei.grundstein.webapp.TextResources";
 
-	public static final String INIT_PARAM_ENCODING = "kirchnerei.grundstein.webapp.encoding";
+	public static final String INIT_PARAM_ENCODING = "kirchnerei.grundstein.webapp.ContentType";
 
-	private static final Log log = LogFactory.getLog(HttpResourceServlet.class);
+	private static final Log log = LogFactory.getLog(HttpTextResourceServlet.class);
 
 	private static final String ETAG_SESSION_KEY =
-		HttpResourceServlet.class.getName() + ".ETagSession";
+		HttpTextResourceServlet.class.getName() + ".ETagSession";
 
 	private static final String REQ_HEADER_MATCH = "If-None-Match";
 	private static final String REQ_HEADER_ETAG = "ETag";
@@ -109,7 +109,7 @@ public class HttpResourceServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		super.init();
-		CompositeBuilder builder = HttpBuilder.getCompositeBuilder(getServletContext());
+		CompositeBuilder builder = HttpCompositeBuilder.getCompositeBuilder(getServletContext());
 		loadETagStrategy(builder);
 		loadTextResources(builder);
 		loadEncoding();

@@ -60,10 +60,10 @@ public class TextResources implements CompositeInit {
 	}
 
 	private InputStream openStream() {
-		List<InputStream> streams = new ArrayList<>(resources.size());
+		BulkInputStream input = new BulkInputStream();
 		for (String resourceName : resources) {
-			streams.add(factory.open(resourceName));
+			input.add(factory.open(resourceName));
 		}
-		return new BulkInputStream(streams);
+		return input;
 	}
 }
