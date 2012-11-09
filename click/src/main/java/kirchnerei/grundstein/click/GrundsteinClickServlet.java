@@ -18,7 +18,7 @@ package kirchnerei.grundstein.click;
 
 import kirchnerei.grundstein.LogUtils;
 import kirchnerei.grundstein.composite.CompositeBuilder;
-import kirchnerei.grundstein.webapp.HttpBuilder;
+import kirchnerei.grundstein.webapp.HttpCompositeBuilder;
 import ognl.TypeConverter;
 import org.apache.click.ClickServlet;
 import org.apache.click.Page;
@@ -45,7 +45,7 @@ public class GrundsteinClickServlet extends ClickServlet {
 	public void init() throws ServletException {
 		super.init();
 
-		builder = HttpBuilder.getCompositeBuilder(getServletContext());
+		builder = HttpCompositeBuilder.getCompositeBuilder(getServletContext());
 		LogUtils.debug(log, "initialize the click servlet and load the composite builder: %s",
 			builder == null ? "failed" : "okay");
 	}

@@ -20,7 +20,7 @@ import kirchnerei.grundstein.composite.CompositeBuilder;
 
 import javax.servlet.ServletContext;
 
-public final class HttpBuilder {
+public final class HttpCompositeBuilder {
 
 	static final String ATTR_BUILDER_KEY = CompositeBuilder.class.getName();
 

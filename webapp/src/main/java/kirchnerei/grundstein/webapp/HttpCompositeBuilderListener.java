@@ -35,13 +35,13 @@ import javax.servlet.ServletContextListener;
  * <p>Listener</p>
  * <pre><code>
  * &lt;listener&gt;
- *    &lt;listener-class&gt;kirchnerei.grundstein.webapp.HttpBuilderListener&lt;/listener-class&gt;
+ *    &lt;listener-class&gt;kirchnerei.grundstein.webapp.HttpCompositeBuilderListener&lt;/listener-class&gt;
  * &lt;/listener&gt;
  * </code></pre>
  */
-public class HttpBuilderListener implements ServletContextListener {
+public class HttpCompositeBuilderListener implements ServletContextListener {
 
-	private static final Log log = LogFactory.getLog(HttpBuilderListener.class);
+	private static final Log log = LogFactory.getLog(HttpCompositeBuilderListener.class);
 
 	static final String PARAM_BUILDER_SETUP = "kirchnerei.grundstein.composite.Setup";
 
@@ -51,7 +51,7 @@ public class HttpBuilderListener implements ServletContextListener {
 		try {
 			String className = ctx.getInitParameter(PARAM_BUILDER_SETUP);
 			Class<?> setupType = ClassUtils.forName(className);
-			HttpBuilder.initialize(ctx, setupType);
+			HttpCompositeBuilder.initialize(ctx, setupType);
 			LogUtils.debug(log, "initialize the composite builder with '%s'", className);
 		} catch (Exception e) {
 			LogUtils.warn(log, e, "initializing of composite builder is failed");
@@ -61,7 +61,7 @@ public class HttpBuilderListener implements ServletContextListener {
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
 		ServletContext ctx = sce.getServletContext();
-		HttpBuilder.destroyBuilder(ctx);
+		HttpCompositeBuilder.destroyBuilder(ctx);
 		LogUtils.debug(log, "composite builder is destroyed");
 	}
 }
