@@ -7,14 +7,13 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BuildInputStreamTest {
+public class BulkInputStreamTest {
 
 	@Test
 	public void testBuildInputStream() throws IOException {
-		List<InputStream> streams = new ArrayList<>();
-		streams.add(openStream("BulkText1.txt"));
-		streams.add(openStream("BulkText2.txt"));
-		BulkInputStream input = new BulkInputStream(streams);
+		BulkInputStream input = new BulkInputStream();
+		input.add(openStream("BulkText1.txt"));
+		input.add(openStream("BulkText2.txt"));
 		Reader reader = new InputStreamReader(input);
 		BufferedReader in = new BufferedReader(reader);
 		String line;

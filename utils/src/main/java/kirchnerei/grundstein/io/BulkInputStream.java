@@ -2,74 +2,136 @@ package kirchnerei.grundstein.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * TODO add documentation
+ *
+ * Used from "org.eclipse.jgit.util.io.UnionInputStream.java"
  */
 public class BulkInputStream extends InputStream {
 
-	private Deque<InputStream> streams;
+	private final Deque<InputStream> streams = new LinkedList<>();
 
-	public BulkInputStream(List<InputStream> streams) {
+	public BulkInputStream() {
 		super();
-		this.streams = new LinkedList<>(streams);
 	}
 
 	public BulkInputStream(InputStream... streams) {
 		super();
-		this.streams = new LinkedList<>(Arrays.asList(streams));
+		Collections.addAll(this.streams, streams);
+	}
+
+	/**
+	 * Add a input stream on the end of the list.
+	 * @param in input stream instance
+	 */
+	public void add(InputStream in) {
+		streams.add(in);
+	}
+
+	public boolean isEmpty() {
+		return streams.isEmpty();
 	}
 
 	@Override
 	public int read() throws IOException {
-		int result = -1;
-		while (!streams.isEmpty() && (result = streams.getFirst().read()) == -1) {
-			nextStream();
+		while (true) {
+			final InputStream in = getHeadStream();
+			final int r = in.read();
+			if (0 <= r)
+				return r;
+			else if (in == DUMMY)
+				return -1;
+			else
+				nextStream();
 		}
-		return result;
 	}
 
 	@Override
 	public int read(byte b[], int off, int len) throws IOException {
-		int result = -1;
-		while (!streams.isEmpty() && (result = streams.getFirst().read(b, off, len)) == -1) {
-			nextStream();
-		}
-		return result;
-	}
-
-	@Override
-	public long skip(long n) throws IOException {
-		long skipped = 0L;
-		while (skipped < n && !streams.isEmpty()) {
-			long thisSkip = streams.getFirst().skip(n - skipped);
-			if (thisSkip > 0)
-				skipped += thisSkip;
+		int cnt = 0;
+		while (0 < len) {
+			final InputStream in = getHeadStream();
+			final int n = in.read(b, off, len);
+			if (0 < n) {
+				cnt += n;
+				off += n;
+				len -= n;
+			} else if (in == DUMMY)
+				return 0 < cnt ? cnt : -1;
 			else
 				nextStream();
 		}
-		return skipped;
+		return cnt;
+	}
+
+	@Override
+	public long skip(long len) throws IOException {
+		long cnt = 0;
+		while (0 < len) {
+			final InputStream in = getHeadStream();
+			final long n = in.skip(len);
+			if (0 < n) {
+				cnt += n;
+				len -= n;
+
+			} else if (in == DUMMY) {
+				return cnt;
+
+			} else {
+				// Is this stream at DUMMY? We can't tell from skip alone.
+				// Read one byte to test for DUMMY, discard it if we aren't
+				// yet at DUMMY.
+				//
+				final int r = in.read();
+				if (r < 0) {
+					nextStream();
+				} else {
+					cnt += 1;
+					len -= 1;
+				}
+			}
+		}
+		return cnt;
 	}
 
 
 	@Override
 	public int available() throws IOException {
-		return streams.isEmpty() ? 0 : streams.getFirst().available();
+		return getHeadStream().available();
 	}
 
 	@Override
 	public void close() throws IOException {
-		while (!streams.isEmpty()) {
-			nextStream();
+		IOException err = null;
+
+		for (Iterator<InputStream> i = streams.iterator(); i.hasNext();) {
+			try {
+				i.next().close();
+			} catch (IOException closeError) {
+				err = closeError;
+			}
+			i.remove();
 		}
+
+		if (err != null)
+			throw err;
 	}
 
+	private InputStream getHeadStream() {
+		return streams.isEmpty() ? DUMMY : streams.getFirst();
+	}
 
 	private void nextStream() throws IOException {
-		streams.removeFirst().close();
+		if (!streams.isEmpty())
+			streams.removeFirst().close();
 	}
+
+	private static final InputStream DUMMY = new InputStream() {
+		@Override
+		public int read() throws IOException {
+			return -1;
+		}
+	};
 }
