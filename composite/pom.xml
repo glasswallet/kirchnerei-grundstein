@@ -22,18 +22,22 @@
 	<parent>
 		<artifactId>kirchnerei-grundstein</artifactId>
 		<groupId>kirchnerei-grundstein</groupId>
-		<version>0.1</version>
+		<version>0.1.1</version>
 	</parent>
 
 	<artifactId>kirchnerei-grundstein-composite</artifactId>
 
 	<packaging>jar</packaging>
 
+	<properties>
+		<grundstein.version>${parent.version}</grundstein.version>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>kirchnerei-grundstein</groupId>
 			<artifactId>kirchnerei-grundstein-utils</artifactId>
-			<version>0.1</version>
+			<version>${grundstein.version}</version>
 		</dependency>
 	</dependencies>
 
