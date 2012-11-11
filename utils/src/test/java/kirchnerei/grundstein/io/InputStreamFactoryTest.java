@@ -29,24 +29,40 @@ public class InputStreamFactoryTest {
 		assertNotNull(factory);
 	}
 
+	/**
+	 * resource is in the same package as the factory class
+	 * @throws IOException
+	 */
 	@Test
 	public void testInputStreamClassPath() throws IOException {
 		InputStream input = factory.open("class://BulkText1.txt");
 		readAndVerify(input);
 	}
 
+	/**
+	 * resource with the complete package names with the leading slash
+	 * @throws IOException
+	 */
 	@Test
 	public void testInputStreamClassCompletePath1() throws IOException {
 		InputStream input = factory.open("class:///kirchnerei/grundstein/io/BulkText1.txt");
 		readAndVerify(input);
 	}
 
+	/**
+	 * resource with the complete package names without the leading slash
+	 * @throws IOException
+	 */
 	@Test
 	public void testInputStreamClassCompletePath2() throws IOException {
 		InputStream input = factory.open("class://kirchnerei/grundstein/io/BulkText1.txt");
 		readAndVerify(input);
 	}
 
+	/**
+	 * resource as file
+	 * @throws IOException
+	 */
 	@Test
 	public void testInputStreamFilePath() throws IOException {
 		InputStream input = factory.open("file://kirchnerei/grundstein/io/BulkText1.txt");

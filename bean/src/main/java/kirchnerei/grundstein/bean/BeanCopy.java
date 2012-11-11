@@ -34,7 +34,8 @@ public class BeanCopy {
 
 	private static final Log log = LogFactory.getLog(BeanCopy.class);
 
-	private final Map<Class<?>, StringConverter> class2Converter = new HashMap<>();
+	private final Map<Class<?>, StringConverter> class2Converter =
+		new HashMap<Class<?>, StringConverter>();
 
 	private final BeanUtilsBean bub = new BeanUtilsBean();
 	private final PropertyUtilsBean pub = bub.getPropertyUtils();
@@ -176,14 +177,11 @@ public class BeanCopy {
 			if (StringUtils.isEmpty(text)) {
 				return Boolean.FALSE;
 			}
-			switch (text.toLowerCase()) {
-				case "true":
-				case "t":
-					return Boolean.TRUE;
-				case "false":
-				case "f":
-				case "0":
-					return Boolean.FALSE;
+			text = text.toLowerCase();
+			if ("true".startsWith(text) || "t".startsWith(text)) {
+				return Boolean.TRUE;
+			} else if ("false".endsWith(text) || "f".endsWith(text) || "0".startsWith(text)) {
+				return Boolean.FALSE;
 			}
 			int value = NumberUtils.toInt(text);
 			return (value > 0) ? Boolean.TRUE : Boolean.FALSE;

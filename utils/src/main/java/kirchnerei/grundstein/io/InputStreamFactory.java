@@ -1,6 +1,9 @@
 package kirchnerei.grundstein.io;
 
+import kirchnerei.grundstein.LogUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,11 +13,13 @@ import java.util.Map;
 
 public class InputStreamFactory {
 
+	private static final Log log = LogFactory.getLog(InputStreamFactory.class);
+
 	public static final String SEPARATOR = "://";
 
 	private static final int SEP_LENGTH = SEPARATOR.length();
 
-	private final Map<String, OpenerInputStream> openers = new HashMap<>();
+	private final Map<String, OpenerInputStream> openers = new HashMap<String, OpenerInputStream>();
 
 	public InputStreamFactory() {
 		addOpener("class", new ClassOpenerInputStream());
@@ -31,6 +36,17 @@ public class InputStreamFactory {
 			throw new NullPointerException("missing parameter 'resourceName'");
 		}
 		return new DelayedInputStream(resourceName, this);
+	}
+
+	public final InputStream open(String resourceName, boolean withoutDelayed) {
+		if (withoutDelayed) {
+			try {
+				return openInternal(resourceName);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return open(resourceName);
 	}
 
 	protected InputStream openInternal(String resourceName) throws IOException {
@@ -152,11 +168,19 @@ public class InputStreamFactory {
 		private void checkInput() throws IOException {
 			if (!isOpenInput()) {
 				input = factory.openInternal(resourceName);
+				LogUtils.debug(log, "open stream from '%s' (message=%s)",
+					resourceName, input != null ? "okay" : "failed");
 			}
 		}
 
 		private boolean isOpenInput() {
 			return input != null;
+		}
+
+		@Override
+		public String toString() {
+			return String.format("Delayed [name=%s, type=%s]",
+				resourceName, (input != null) ? input : "null");
 		}
 	}
 }

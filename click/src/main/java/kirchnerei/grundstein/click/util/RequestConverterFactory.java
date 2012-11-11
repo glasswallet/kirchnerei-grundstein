@@ -10,7 +10,8 @@ import java.util.Map;
 public class RequestConverterFactory implements CompositeInit {
 
 
-	private final Map<Class<?>, RequestConverter> class2Converter = new HashMap<>();
+	private final Map<Class<?>, RequestConverter> class2Converter =
+		new HashMap<Class<?>, RequestConverter>();
 
 	public Object convert(Object value, Class<?> toClass) {
 		if (contains(toClass)) {

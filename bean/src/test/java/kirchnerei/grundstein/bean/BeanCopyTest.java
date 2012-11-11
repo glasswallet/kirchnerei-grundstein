@@ -80,7 +80,7 @@ public class BeanCopyTest {
 
 	@Test
 	public void testReadParameterDelivery() {
-		final Map<String, String> params = new HashMap<>();
+		final Map<String, String> params = new HashMap<String, String>();
 		params.put("id", "4711");
 		params.put("title", "Parameter Delivery");
 		params.put("active", "true");

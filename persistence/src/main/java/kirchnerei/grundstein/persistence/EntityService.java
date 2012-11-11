@@ -72,7 +72,7 @@ public class EntityService implements CompositeInit, CompositeFree {
 		}
 		try {
 			if (isPersistenceSetting()) {
-				Map<String, String> props = new HashMap<>();
+				Map<String, String> props = new HashMap<String, String>();
 				props.put("javax.persistence.jdbc.driver", persistenceDriver);
 				props.put("javax.persistence.jdbc.url", persistenceUrl);
 				props.put("javax.persistence.jdbc.user", persistenceUser);
