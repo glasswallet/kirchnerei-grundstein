@@ -15,10 +15,14 @@
  */
 package kirchnerei.grundstein.webapp;
 
+import kirchnerei.grundstein.LogUtils;
 import kirchnerei.grundstein.composite.CompositeBuilder;
 import kirchnerei.grundstein.composite.CompositeInit;
-import kirchnerei.grundstein.io.BulkInputStream;
 import kirchnerei.grundstein.io.InputStreamFactory;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -26,11 +30,11 @@ import java.util.List;
 
 public class TextResources implements CompositeInit {
 
-	private final List<String> resources = new ArrayList<>();
+	private static final Log log = LogFactory.getLog(TextResources.class);
+
+	private final List<String> resources = new ArrayList<String>();
 
 	private InputStreamFactory factory;
-
-	private int bufferSize = 1024 * 10; // 10Kb
 
 	private String contentType;
 
@@ -39,14 +43,6 @@ public class TextResources implements CompositeInit {
 	@Override
 	public void init(CompositeBuilder builder) {
 		factory = builder.getSingleton(InputStreamFactory.class);
-	}
-
-	public int getBufferSize() {
-		return bufferSize;
-	}
-
-	public void setBufferSize(int bufferSize) {
-		this.bufferSize = bufferSize;
 	}
 
 	public String getContentType() {
@@ -75,20 +71,17 @@ public class TextResources implements CompositeInit {
 	}
 
 	public void writeTo(Writer writer) throws IOException {
-		Reader reader = new InputStreamReader(openStream(), getEncoding());
-		char[] buffer = new char[getBufferSize()];
-		int length = 0;
-		while ((length = reader.read(buffer)) != -1) {
-			writer.write(buffer, 0, length);
+		if (StringUtils.isEmpty(getEncoding())) {
+			throw new IOException("missing the property 'encoding'");
 		}
-		reader.close();
-	}
-
-	private InputStream openStream() {
-		BulkInputStream input = new BulkInputStream();
+		LogUtils.debug(log, "start writing with encoding='%s'", getEncoding());
 		for (String resourceName : resources) {
-			input.add(factory.open(resourceName));
+			LogUtils.debug(log, "write resource '%s'", resourceName);
+			InputStream input = factory.open(resourceName, false);
+			IOUtils.copy(input, writer, getEncoding());
+			IOUtils.closeQuietly(input);
+			writer.flush();
 		}
-		return input;
+		LogUtils.debug(log, "write text resource");
 	}
 }

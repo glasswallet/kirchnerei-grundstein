@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package kirchnerei.grundstein.webapp;
 
 import kirchnerei.grundstein.ClassUtilException;
@@ -146,9 +147,11 @@ public class HttpTextResourceServlet extends HttpServlet {
 		String etag = getETagFromSession(request);
 		if (!response.isCommitted() && etag.equals(request.getHeader(REQ_HEADER_MATCH))) {
 			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+			LogUtils.debug(log, "ETag is okay, no modified (304) '%s'", etag);
 			return false;
 		}
 		response.setHeader(REQ_HEADER_ETAG, etag);
+		LogUtils.debug(log, "ETag is not okay, the text resource will be delivery '%s'", etag);
 		return true;
 	}
 
@@ -163,7 +166,10 @@ public class HttpTextResourceServlet extends HttpServlet {
 		return etag;
 	}
 
-	protected void addContentType(HttpServletResponse response) {
+	protected void addContentType(HttpServletResponse response) throws IOException {
+		if (StringUtils.isEmpty(response.getContentType())) {
+			throw new IOException("missing the property 'contentType' in text resource");
+		}
 		response.setContentType(resources.getContentType());
 	}
 
@@ -172,7 +178,7 @@ public class HttpTextResourceServlet extends HttpServlet {
 	{
 		OutputStream output = response.getOutputStream();
 		getResources().writeTo(output);
-		output.flush();
+		LogUtils.debug(log, "write the text resource into the output stream");
 	}
 
 
