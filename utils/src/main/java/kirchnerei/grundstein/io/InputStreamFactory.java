@@ -17,13 +17,11 @@ public class InputStreamFactory {
 
 	public static final String SEPARATOR = "://";
 
-	private static final int SEP_LENGTH = SEPARATOR.length();
-
 	private final Map<String, OpenerInputStream> openers = new HashMap<String, OpenerInputStream>();
 
 	public InputStreamFactory() {
 		addOpener("class", new ClassOpenerInputStream());
-		addOpener("file", new ClassOpenerInputStream());
+		addOpener("file", new FileOpenerInputStream());
 		addOpener("http", new HttpOpenerInputStream());
 	}
 
@@ -54,8 +52,7 @@ public class InputStreamFactory {
 		InputStream input = null;
 		if (pos > 0) {
 			String name = resourceName.substring(0, pos);
-			String resName = resourceName.substring(pos + SEP_LENGTH);
-			input = openInternal(name, resName);
+			input = openInternal(name, resourceName);
 		}
 		if (pos <= 0 && input == null) {
 			input = defaultOpen(resourceName);

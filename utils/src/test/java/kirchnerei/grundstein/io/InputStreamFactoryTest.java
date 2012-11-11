@@ -15,6 +15,7 @@
  */
 package kirchnerei.grundstein.io;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.io.*;
@@ -65,7 +66,7 @@ public class InputStreamFactoryTest {
 	 */
 	@Test
 	public void testInputStreamFilePath() throws IOException {
-		InputStream input = factory.open("file://kirchnerei/grundstein/io/BulkText1.txt");
+		InputStream input = factory.open("file://utils/src/test/resources/kirchnerei/grundstein/io/BulkText1.txt");
 		readAndVerify(input);
 	}
 
@@ -89,6 +90,16 @@ public class InputStreamFactoryTest {
 	public void testInputUnknownName() throws Exception {
 		InputStream input = factory.open("class://blabla.txt");
 		input.read();
+	}
+
+	@Test
+	public void testInputHttpFile() throws Exception {
+		InputStream input = factory.open("http://www.google.de", false);
+		assertNotNull(input);
+		String content = IOUtils.toString(input);
+		input.close();
+		assertNotNull(content);
+		assertTrue(content.contains("Google"));
 	}
 
 	private void readAndVerify(InputStream input) throws IOException {
