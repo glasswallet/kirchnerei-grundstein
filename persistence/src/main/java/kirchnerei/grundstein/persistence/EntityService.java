@@ -109,10 +109,18 @@ public class EntityService implements CompositeInit, CompositeFree {
 		}
 	}
 
+	public static void rollback(EntityManager em) {
+		rollback(em.getTransaction());
+	}
+
 	public static void commit(EntityTransaction tx) {
 		if (tx != null) {
 			tx.commit();
 		}
+	}
+
+	public static void commit(EntityManager em) {
+		commit(em.getTransaction());
 	}
 
 	@Override
